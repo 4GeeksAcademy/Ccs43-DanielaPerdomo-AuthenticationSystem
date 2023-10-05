@@ -2,6 +2,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
+			token: "",
 			demo: [
 				{
 					title: "FIRST",
@@ -46,7 +47,68 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				//reset the global store
 				setStore({ demo: demo });
+			},
+			makeLogin: async (data) => {
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "/api/login", {
+						method: "POST",
+						body: JSON.stringify(data),
+						headers: {
+							"Content-Type": "application/json"
+						}
+					})
+					const body = await response.json()
+					
+					if (response.status == 400){
+						alert(body.message)
+						return false
+					} else if (response.status == 404){
+						alert(body.message)
+						return false
+					} else if(response.ok){
+						const token = body.token
+						setStore({token: token})
+						localStorage.setItem("token", token)
+						return true
+					}
+					
+				}catch (error) {
+					console.log(error)
+				}
+			},
+			makeSignup: async (data) => {
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "/api/signup", {
+						method: "POST",
+						body: JSON.stringify(data),
+						headers: {
+							"Content-Type": "application/json"
+						}
+					})
+					const body = await response.json()
+					
+					if (response.status == 400){
+						alert(body.message)
+						return false
+					} else if (response.status == 404){
+						alert(body.message)
+						return false
+					} else if(response.ok){
+						alert(body.message)
+						return true
+					}
+					
+				}catch (error) {
+					console.log(error)
+				}
+			},
+
+			makeLogout: () => {
+				localStorage.removeItem("token")
+				setStore({token: ""})
+				return true
 			}
+
 		}
 	};
 };
