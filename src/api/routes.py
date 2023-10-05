@@ -7,6 +7,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required  
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
+from passlib.hash import bcrypt_sha256
 
 api = Blueprint('api', __name__)
 
@@ -40,12 +41,12 @@ def create_users():
         return jsonify({
             "message": "User already exist"
         }), 400
-    
+    password_hash = bcrypt_sha256.hash(user_data["password"])
     email = user_data["email"]
-    password = user_data["password"]
+    
     user = User()
     user.email = email
-    user.password = password
+    user.password = password_hash
     user.is_active = True
 
     try:
@@ -85,7 +86,8 @@ def login():
             "message": "User not found"
         }), 404
     
-    password_is_valid = password == user.password 
+    # password_is_valid = password == user.password 
+    password_is_valid = bcrypt_sha256.verify(password, user.password)
 
     if not password_is_valid:
         return jsonify({
